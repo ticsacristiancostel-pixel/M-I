@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Utilizarea Metodelor Interactive</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* =========================================
+           VARIABILE DE CULOARE ȘI STIL (TEMPLATE)
+           ========================================= */
+        :root {
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #4a5568;
+            --text-light: #718096;
+            
+            /* Culori extrase din PPT */
+            --teal: #138D90;       /* Verde-albastru principal */
+            --yellow: #D69E2E;     /* Galben/Ocru */
+            --dark-blue: #2B4C6F;  /* Albastru închis */
+            --light-blue: #4A6B8C; /* Albastru deschis */
+            --red: #C94C4C;        /* Roșu cărămiziu */
+            --green: #276749;      /* Verde închis */
+            
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body, html { 
+            height: 100%; 
+            font-family: var(--font-family); 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            overflow: hidden; 
+        }
+
+        .presentation { 
+            width: 100vw; 
+            height: 100dvh; 
+            position: relative; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        /* =========================================
+           STRUCTURA SLIDE-URILOR
+           ========================================= */
+        .slide { 
+            display: none; 
+            width: 100%; 
+            height: 100%; 
+            background: var(--card-bg); 
+            padding: 30px 20px 90px 20px; /* Padding jos pentru butoane pe mobil */
+            overflow-y: auto; 
+            flex-direction: column; 
+            animation: fadeIn 0.4s ease-in-out; 
+        }
+        
+        .slide.active { display: flex; }
+
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* =========================================
+           TIPOGRAFIE FLUIDĂ
+           ========================================= */
+        h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); color: var(--teal); text-align: center; margin-bottom: 10px; line-height: 1.2; }
+        h2 { font-size: clamp(1.4rem, 4vw, 2rem); color: var(--teal); margin-bottom: 20px; font-weight: 600; }
+        h3 { font-size: clamp(1.1rem, 3vw, 1.3rem); margin-bottom: 10px; font-weight: 700; color: var(--text-main); }
+        p, li { font-size: clamp(0.95rem, 2.5vw, 1.1rem); line-height: 1.5; color: var(--text-muted); margin-bottom: 10px; }
+        ul { padding-left: 20px; }
+
+        /* =========================================
+           LAYOUT GRID (MOBIL -> DESKTOP)
+           ========================================= */
+        .grid-1 { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr; gap: 15px; }
+
+        /* =========================================
+           COMPONENTE (CARDURI, BANERE, ETC.)
+           ========================================= */
+        .card { 
+            background: var(--bg-color); 
+            padding: 20px; 
+            border-radius: 12px; 
+            border-top: 4px solid var(--teal); 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .card-blue { border-top-color: var(--dark-blue); }
+        .card-yellow { border-top-color: var(--yellow); }
+        .card-red { border-top-color: var(--red); }
+        .card-green { border-top-color: var(--green); }
+
+        .card h3 { display: flex; align-items: center; gap: 10px; color: var(--teal); margin-top: 0; }
+        .card-blue h3 { color: var(--dark-blue); }
+        .card-yellow h3 { color: var(--yellow); }
+        .card-red h3 { color: var(--red); }
+        .card-green h3 { color: var(--green); }
+
+        .badge { 
+            display: inline-block; 
+            padding: 6px 14px; 
+            border-radius: 20px; 
+            font-size: 0.85rem; 
+            font-weight: bold; 
+            color: white; 
+            margin: 5px; 
+        }
+
+        .highlight-banner { 
+            background: var(--teal); 
+            color: white; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-top: 20px; 
+            text-align: center; 
+            font-size: clamp(0.95rem, 2.5vw, 1.1rem); 
+            font-weight: 600;
+        }
+        
+        .highlight-banner-blue { background: var(--dark-blue); }
+        .highlight-banner-dark { background: #1A202C; }
+
+        /* Step Flow (Slide 5) */
+        .step-flow { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .step-box { background: var(--bg-color); border-radius: 8px; padding: 15px; border-left: 4px solid var(--teal); position: relative; }
+        .step-num { font-size: 1.5rem; font-weight: 900; color: rgba(19, 141, 144, 0.2); position: absolute; right: 15px; top: 10px; }
+        
+        /* Tabele (Slide 7) */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: clamp(0.85rem, 2vw, 1rem); }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { color: var(--dark-blue); font-weight: bold; }
+        .percent { color: var(--teal); font-weight: bold; text-align: right; }
+        .highlight-row { background-color: rgba(19, 141, 144, 0.05); font-weight: bold; }
+
+        /* =========================================
+           CONTROALE ȘI NAVIGARE
+           ========================================= */
+        .controls { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            display: flex; 
+            justify-content: space-between; 
+            gap: 10px; 
+            padding: 15px 20px; 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(5px); 
+            border-top: 1px solid #e2e8f0; 
+            z-index: 100; 
+        }
+        
+        button { 
+            background: var(--dark-blue); 
+            color: white; 
+            border: none; 
+            padding: 12px 20px; 
+            font-size: 1rem; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 8px; 
+            flex: 1; 
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        button:active { background: var(--teal); }
+
+        .progress-bar { position: absolute; top: 0; left: 0; height: 5px; background: var(--teal); transition: width 0.3s; z-index: 100; }
+        .slide-counter { 
+            position: absolute; 
+            top: 15px; 
+            right: 20px; 
+            font-size: 0.9rem; 
+            color: var(--text-light); 
+            font-weight: bold; 
+            z-index: 100; 
+            background: rgba(255,255,255,0.8); 
+            padding: 4px 10px; 
+            border-radius: 15px; 
+            border: 1px solid #e2e8f0;
+        }
+
+        /* =========================================
+           MEDIA QUERIES PENTRU DESKTOP (>= 768px)
+           ========================================= */
+        @media (min-width: 768px) {
+            .slide { 
+                width: 90%; 
+                max-width: 1200px; 
+                height: 88vh; 
+                border-radius: 20px; 
+                padding: 40px 50px; 
+                margin: auto; 
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                overflow-y: auto; 
+            }
+            .grid-2 { grid-template-columns: 1fr 1fr; }
+            .grid-3 { grid-template-columns: repeat(3, 1fr); }
+            
+            .step-flow { flex-direction: row; justify-content: space-between; gap: 15px; }
+            .step-box { flex: 1; text-align: center; border-left: none; border-top: 4px solid var(--teal); padding-top: 25px; }
+            
+            .controls { 
+                position: static; 
+                background: transparent; 
+                backdrop-filter: none; 
+                border: none; 
+                padding: 0; 
+                width: auto; 
+                margin-top: 30px; 
+                justify-content: center; 
+                gap: 20px; 
+            }
+            button { flex: none; padding: 12px 30px; border-radius: 25px; }
+            .slide-counter { top: 20px; right: 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="slide-counter" id="slideCounter">1 / 8</div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1 -->
+        <div class="slide active">
+            <div style="display: flex; flex-direction: column; justify-content: center; height: 100%; text-align: center;">
+                <p style="color: var(--teal); font-weight: bold; letter-spacing: 1px; font-size: 0.9rem; text-transform: uppercase;">Prezentare Didactică</p>
+                <h1 style="margin-top: 15px;">UTILIZAREA METODELOR INTERACTIVE</h1>
+                <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 30px;">în procesul de predare – învățare – evaluare</p>
+                
+                <div style="margin-bottom: 40px;">
+                    <span class="badge" style="background: var(--teal);">Lecție demonstrativă</span>
+                    <span class="badge" style="background: var(--yellow);">Film didactic</span>
+                    <span class="badge" style="background: var(--dark-blue);">Prezentare multimedia</span>
+                </div>
+                
+                <div style="background: var(--bg-color); padding: 20px; border-radius: 15px; display: inline-block; margin: auto;">
+                    <h3 style="color: var(--dark-blue); margin-bottom: 5px;">DOMENIUL CONSTRUCȚII</h3>
+                    <p style="font-size: 1.1rem; color: var(--teal); font-weight: bold; margin: 0;">Specializarea: ZIDAR – PIETRAR – TENCUIETOR</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2 -->
+        <div class="slide">
+            <h2>De ce metode interactive?</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 20px;"><strong>Elevul învață mai eficient atunci când observă, execută, explică și verifică rezultatul.</strong></p>
+            
+            <div class="grid-3">
+                <div class="card card-blue">
+                    <h3><i class="fas fa-hands"></i> ÎNVĂȚARE ACTIVĂ</h3>
+                    <p>Elevii rezolvă sarcini concrete: măsoară, trasează, prepară mortarul și execută operații tehnologice.</p>
+                </div>
+                <div class="card card-blue">
+                    <h3><i class="fas fa-link"></i> LEGĂTURA CU PRACTICA</h3>
+                    <p>Situațiile de lucru reproduc etape reale de pe șantier și dezvoltă deprinderi transferabile.</p>
+                </div>
+                <div class="card card-blue">
+                    <h3><i class="fas fa-sync-alt"></i> FEEDBACK IMEDIAT</h3>
+                    <p>Greșelile sunt identificate la timp, iar elevii înțeleg cum influențează calitatea lucrării.</p>
+                </div>
+            </div>
+            
+            <div class="highlight-banner" style="margin-top: auto;">
+                REZULTATUL URMĂRIT<br>
+                <span style="font-weight: normal; font-size: 0.9em; display: block; margin-top: 5px;">Competență profesională = cunoștințe + deprinderi practice + atitudine responsabilă. Accent pe calitate, precizie, colaborare și securitate în muncă.</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 3 -->
+        <div class="slide">
+            <h2>Obiectivele activității</h2>
+            
+            <div class="grid-2">
+                <div>
+                    <p>La finalul activității, elevii vor putea:</p>
+                    <ul>
+                        <li>să identifice materialele, sculele și echipamentele utilizate la zidărie și tencuieli;</li>
+                        <li>să citească o schiță simplă și să stabilească ordinea operațiilor;</li>
+                        <li>să execute corect măsurarea, trasarea și verificarea verticalității și planeității;</li>
+                        <li>să explice rolul mortarului și importanța respectării dozajului;</li>
+                        <li>să aplice regulile de securitate și sănătate în muncă.</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="card card-blue" style="margin-bottom: 10px;">
+                        <h3>CUNOȘTINȚE</h3>
+                        <p>Materiale, tehnologii, instrumente de măsură și control.</p>
+                    </div>
+                    <div class="card card-yellow" style="margin-bottom: 10px;">
+                        <h3>ABILITĂȚI</h3>
+                        <p>Măsurare, trasare, zidire, rostuire, tencuire și finisare.</p>
+                    </div>
+                    <div class="card card-green">
+                        <h3>ATITUDINI</h3>
+                        <p>Responsabilitate, ordine, lucru în echipă și respectarea normelor SSM.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4 -->
+        <div class="slide">
+            <h2>3. Metode interactive – de la explicație la acțiune</h2>
+            
+            <div class="grid-2">
+                <div class="card card-blue">
+                    <h3>BRAINSTORMING</h3>
+                    <p>„Ce poate compromite rezistența și aspectul unei zidării?“ Activarea cunoștințelor și formularea ipotezelor.</p>
+                </div>
+                <div class="card card-blue">
+                    <h3>ÎNVĂȚAREA PRIN DESCOPERIRE</h3>
+                    <p>Elevii compară cărămizi, blocuri și mortare; identifică proprietăți și utilizări.</p>
+                </div>
+                <div class="card">
+                    <h3>LUCRUL ÎN ECHIPĂ</h3>
+                    <p>Echipele primesc roluri: măsurare, preparare, execuție, controlul calității.</p>
+                </div>
+                <div class="card">
+                    <h3>STUDIUL DE CAZ</h3>
+                    <p>Analiza unei zidării cu rosturi neuniforme sau a unei tencuieli fisurate; cauze și remedieri.</p>
+                </div>
+                <div class="card card-yellow">
+                    <h3>PROBLEMATIZAREA</h3>
+                    <p>„Cum verificăm verticalitatea unui perete fără să așteptăm finalizarea lucrării?”</p>
+                </div>
+                <div class="card card-yellow">
+                    <h3>TURUL GALERIEI</h3>
+                    <p>Echipele expun mostrele realizate; colegii oferă feedback pe criterii clare.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5 -->
+        <div class="slide">
+            <h2>Sarcină practică: realizarea unui panou de zidărie</h2>
+            <p style="text-align: center; font-weight: bold; color: var(--teal);">cu respectarea legăturii și a rosturilor</p>
+            
+            <div class="step-flow">
+                <div class="step-box">
+                    <span class="step-num">01</span>
+                    <h3 style="color: var(--dark-blue);">PREGĂTIRE</h3>
+                    <p style="font-size: 0.95rem;">EIP, materiale, scule; verificarea suportului și organizarea locului de muncă.</p>
+                </div>
+                <div class="step-box" style="border-top-color: var(--yellow);">
+                    <span class="step-num" style="color: rgba(214, 158, 46, 0.2);">02</span>
+                    <h3 style="color: var(--yellow);">TRASARE</h3>
+                    <p style="font-size: 0.95rem;">Stabilirea reperelor, verificarea dimensiunilor și poziționarea primului rând.</p>
+                </div>
+                <div class="step-box" style="border-top-color: var(--teal);">
+                    <span class="step-num">03</span>
+                    <h3 style="color: var(--teal);">EXECUȚIE</h3>
+                    <p style="font-size: 0.95rem;">Așternerea mortarului, poziționarea cărămizilor, realizarea rosturilor și a legăturii.</p>
+                </div>
+                <div class="step-box" style="border-top-color: var(--green);">
+                    <span class="step-num" style="color: rgba(39, 103, 73, 0.2);">04</span>
+                    <h3 style="color: var(--green);">CONTROL</h3>
+                    <p style="font-size: 0.95rem;">Verificarea nivelului, verticalității, alinierii și grosimii rosturilor.</p>
+                </div>
+            </div>
+            
+            <div class="grid-2" style="margin-top: 20px;">
+                <div style="background: var(--bg-color); padding: 15px; border-radius: 10px; border-left: 4px solid var(--dark-blue);">
+                    <h3 style="color: var(--dark-blue); margin-top: 0; font-size: 1.1rem;">ROLUL PROFESORULUI</h3>
+                    <p style="margin: 0;">Demonstrează operația, verbalizează pașii, evidențiază erorile și oferă sprijin diferențiat.</p>
+                </div>
+                <div style="background: var(--bg-color); padding: 15px; border-radius: 10px; border-left: 4px solid var(--yellow);">
+                    <h3 style="color: var(--yellow); margin-top: 0; font-size: 1.1rem;">ROLUL ELEVULUI</h3>
+                    <p style="margin: 0;">Observă, execută pe rând, colaborează și justifică alegerile tehnice.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6 -->
+        <div class="slide">
+            <h2>Resurse multimedia</h2>
+            
+            <div class="grid-2">
+                <div class="card card-red">
+                    <h3><i class="fas fa-video"></i> FILM DIDACTIC – „DIN ȘANTIER ÎN ATELIER”</h3>
+                    <ul style="margin-top: 10px;">
+                        <li>Secvențe scurte: pregătirea mortarului, zidirea unui colț, verificarea cu firul cu plumb și aplicarea tencuielii.</li>
+                        <li>Oprire pe cadre-cheie pentru întrebări și predicții.</li>
+                    </ul>
+                </div>
+                <div class="card card-blue">
+                    <h3><i class="fas fa-desktop"></i> PREZENTARE PPT INTERACTIVĂ</h3>
+                    <ul style="margin-top: 10px;">
+                        <li>Fotografii și scheme adnotate; succesiunea operațiilor; comparație între execuție corectă și defectuoasă.</li>
+                        <li>Întrebări inserate după fiecare etapă.</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="background: var(--bg-color); padding: 20px; border-radius: 10px; margin-top: 20px;">
+                <h3 style="margin-top: 0; color: var(--dark-blue);">Exemple de întrebări pentru oprirea filmului:</h3>
+                <ul style="margin-bottom: 0;">
+                    <li>Ce instrument folosim pentru verificarea verticalității? De ce?</li>
+                    <li>Ce efect au rosturile neuniforme asupra calității zidăriei?</li>
+                    <li>Ce măsuri de protecție sunt obligatorii înainte de începerea lucrului?</li>
+                </ul>
+            </div>
+            
+            <div class="highlight-banner highlight-banner-blue" style="margin-top: auto;">
+                Regulă didactică: materialul video susține demonstrația, nu o înlocuiește.
+            </div>
+        </div>
+
+        <!-- SLIDE 7 (ACTUALIZAT) -->
+        <div class="slide">
+            <h2>Evaluarea competențelor</h2>
+            <p>Evaluarea urmărește atât produsul realizat, cât și modul de lucru.</p>
+            
+            <div class="grid-3" style="margin-bottom: 20px;">
+                <div class="card card-blue">
+                    <h3>EVALUARE INIȚIALĂ</h3>
+                    <p style="font-size: 0.95rem;">Întrebări rapide, imagini cu materiale și scule, asociere termen-utilizare.</p>
+                </div>
+                <div class="card">
+                    <h3>EVALUARE FORMATIVĂ</h3>
+                    <p style="font-size: 0.95rem;">Observarea execuției, întrebări de ghidare, corectarea imediată a greșelilor.</p>
+                </div>
+                <div class="card card-yellow">
+                    <h3>EVALUARE FINALĂ</h3>
+                    <p style="font-size: 0.95rem;">Produs practic, explicația etapelor și autoevaluarea contribuției în echipă.</p>
+                </div>
+            </div>
+            
+            <div class="grid-2">
+                <div>
+                    <h3 style="color: var(--dark-blue);">RUBRICĂ DE APRECIERE – EXEMPLU</h3>
+                    <table>
+                        <tr><th>Criteriu</th><th style="text-align: right;">Pondere</th></tr>
+                        <tr><td>Respectarea succesiunii tehnologice</td><td class="percent">25%</td></tr>
+                        <tr><td>Aliniere, nivel și verticalitate</td><td class="percent">20%</td></tr>
+                        <tr><td>Calitatea rosturilor / finisajului</td><td class="percent">25%</td></tr>
+                        <tr><td>SSM, ordine și colaborare</td><td class="percent">20%</td></tr>
+                        <!-- Punct din oficiu adăugat aici -->
+                        <tr class="highlight-row"><td>Punct din oficiu</td><td class="percent">10%</td></tr>
+                    </table>
+                </div>
+                <div style="background: #f0fff4; padding: 20px; border-radius: 10px; border-left: 5px solid var(--green);">
+                    <h3 style="color: var(--green); margin-top: 0;">FEEDBACK CONSTRUCTIV</h3>
+                    <ul style="margin-bottom: 0;">
+                        <li>„Ce ai realizat corect?”</li>
+                        <li>„Ce ai îmbunătăți?”</li>
+                        <li>„Ce vei face diferit la următoarea lucrare?”</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8 -->
+        <div class="slide">
+            <h2>7. Concluzii – competențe pentru șantierul real</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 20px;">Metodele interactive transformă elevul din receptor de informații în participant activ la propria formare profesională.</p>
+            
+            <div class="grid-3">
+                <div class="card card-blue" style="text-align: center;">
+                    <h3 style="justify-content: center; font-size: 1.5rem; color: var(--dark-blue);">ȘTIU</h3>
+                    <p>Înțeleg materialele, tehnologia și regulile.</p>
+                </div>
+                <div class="card" style="text-align: center; border-top-color: var(--teal);">
+                    <h3 style="justify-content: center; font-size: 1.5rem; color: var(--teal);">POT SĂ FAC</h3>
+                    <p>Execut operațiile corect și în siguranță.</p>
+                </div>
+                <div class="card card-green" style="text-align: center;">
+                    <h3 style="justify-content: center; font-size: 1.5rem; color: var(--green);">ȘTIU SĂ VERIFIC</h3>
+                    <p>Evaluez calitatea și corectez neconformitățile.</p>
+                </div>
+            </div>
+            
+            <div class="highlight-banner highlight-banner-dark" style="margin-top: 30px; font-size: 1.2rem; font-style: italic;">
+                „Calitatea unei construcții începe cu priceperea, atenția și responsabilitatea celui care o execută.”
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <h2 style="color: var(--teal); margin-bottom: 5px;">VĂ MULȚUMESC!</h2>
+                <p style="color: var(--text-light); font-size: 0.9rem;">Material didactic - domeniul construcții | Zidar – pietrar – tencuitor</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- BUTOANE NAVIGARE -->
+    <div class="controls">
+        <button onclick="prevSlide()"><i class="fas fa-chevron-left"></i> Anterior</button>
+        <button onclick="nextSlide()">Următor <i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <!-- LOGICA JAVASCRIPT -->
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progressBar');
+        const slideCounter = document.getElementById('slideCounter');
+
+        function showSlide(index) {
+            slides.forEach(s => s.classList.remove('active'));
+            
+            // Loop logic
+            if (index >= slides.length) currentSlide = 0;
+            if (index < 0) currentSlide = slides.length - 1;
+            
+            slides[currentSlide].classList.add('active');
+            
+            // Update progress
+            progressBar.style.width = ((currentSlide + 1) / slides.length) * 100 + '%';
+            slideCounter.innerText = `${currentSlide + 1} / ${slides.length}`;
+            
+            // Scroll to top on mobile
+            slides[currentSlide].scrollTop = 0;
+        }
+
+        function nextSlide() { currentSlide++; showSlide(currentSlide); }
+        function prevSlide() { currentSlide--; showSlide(currentSlide); }
+
+        // Suport Swipe pentru Mobil
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+        
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, {passive: true});
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) nextSlide(); // Swipe Stânga
+            if (touchEndX > touchStartX + 50) prevSlide(); // Swipe Dreapta
+        }
+
+        // Suport Tastatură pentru Desktop
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // Initializare
+        showSlide(0);
+    </script>
+</body>
+</html>
